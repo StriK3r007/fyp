@@ -1,9 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import Login from './pages/Login';
 import Signup from './pages/Signup'; // Placeholder for now
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
+import UserDashboard from './pages/UserDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+// import Unauthorized from './pages/Unauthorized';
 
 
 function App() {
@@ -17,6 +21,8 @@ function App() {
           path="/dashboard"
           element={<ProtectedRoute role={['admin', 'driver', 'super-admin', 'user']} component={Dashboard} />}
         />
+        <Route path="/user-dashboard" element={<ProtectedRoute role={['user']} component={UserDashboard} />} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute role={['admin', 'super-admin']} component={AdminDashboard} />} />
         {/* More routes like /dashboard will go here later */}
       </Routes>
     </Router>

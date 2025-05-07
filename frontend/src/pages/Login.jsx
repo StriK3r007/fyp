@@ -6,17 +6,27 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const role = res.data.user.role;
 
       localStorage.setItem('token', res.data.token); // store token
       localStorage.setItem('role', res.data.role);   // store role (admin, user, etc.)
       
-      alert('Login successful');
-      navigate('/dashboard'); // redirect to dashboard
+      
+      if (role === 'admin' || role === 'super-admin') {
+        navigate('/admin-dashboard');
+      } else if (role === 'user') {
+        navigate('/user-dashboard');
+      } else {
+        navigate('/unauthorized');
+      }
+
+      // alert('Login successful');
+      // navigate('/dashboard'); // redirect to dashboard
     } catch (err) {
       console.error(err);
       alert('Login failed: ' + err.response?.data?.message || err.message);
