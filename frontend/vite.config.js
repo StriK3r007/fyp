@@ -13,4 +13,13 @@ export default defineConfig({
     // reactRouter(),
     // tsconfigPaths(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000', // or whatever your backend runs on
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

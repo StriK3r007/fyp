@@ -105,8 +105,15 @@ exports.deleteUser = async (req, res) => {
 // Get logged in user
 exports.getLoggedInUser = async (req, res) => {
     try {
-        // The authMiddleware has already attached the user object to req.user
-        res.status(200).json(req.user);
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        });
     } catch (err) {
         console.error('Error fetching logged-in user:', err);
         res.status(500).json({ message: 'Error fetching user data', error: err.message });
