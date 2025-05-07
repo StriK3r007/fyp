@@ -147,6 +147,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { LogOut } from 'lucide-react';
 
 const UserDashboard = () => {
   const [user, setUser] = useState(null);
@@ -165,7 +166,6 @@ const UserDashboard = () => {
         const res = await axios.get("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetched user data:", res.data); // 👈 Add this line
         setUser(res.data);
         // setFormData({ name: res.data.name, email: res.data.email, password: "" });
         setFormData({
@@ -190,7 +190,6 @@ const UserDashboard = () => {
   };
 
   const handleSave = async () => {
-    console.log('Save button clicked'); // Add this line
     console.log("user in handleSave:", user);
     if (!user?._id) {
       console.error("Error: User ID is undefined. Cannot update.");
@@ -247,12 +246,10 @@ const UserDashboard = () => {
   };
 
   if (loading) {
-    console.log("Still loading...");
     return <div className="p-10">Loading profile...</div>;
   }
 
   if (!user) {
-    console.log("User not loaded");
     return <div className="p-10">Failed to load user data.</div>;
   }
 
@@ -260,7 +257,7 @@ const UserDashboard = () => {
     <div className="flex w-screen h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md p-6">
-        <h2 className="text-xl font-bold mb-6">User Dashboard</h2>
+        <h2 className="text-xl font-bold mb-6 text-green-500">User Dashboard</h2>
         <nav className="space-y-4">
           <button onClick={showUserProfile} className="block text-blue-600 font-medium focus:outline-none">
             Profile
@@ -269,15 +266,15 @@ const UserDashboard = () => {
             Edit Profile
           </button>
           <a href="#" className="block text-gray-600 hover:text-blue-600 focus:outline-none">Settings</a>
-          <button onClick={handleLogout} className="block text-red-600 hover:text-red-700 focus:outline-none">
-            Logout
+          <button onClick={handleLogout} className="flex items-center gap-2.5 text-red-600 hover:text-red-700 focus:outline-none">
+            <span>Logout</span> <span><LogOut color="#00c950" size={18} /></span>
           </button>
         </nav>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-10 overflow-y-auto">
-        <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-700">Welcome Back <span className="text-gray-500 uppercase">{user.name}</span> </h1>
 
         {showProfile && (
           <div className="bg-white p-6 rounded-lg shadow-md max-w-md space-y-4">
