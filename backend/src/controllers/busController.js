@@ -2,20 +2,19 @@ const Bus = require('../models/busModel');
 
 // Create a Bus
 exports.createBus = async (req, res) => {
-    const { number, route, currentLocation } = req.body;
+    const { number, route, currentLocation, capacity } = req.body;
     try {
         // Ensure the user has the correct role to create a driver
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'You do not have permission to create drivers' });
         }
 
-        const bus = new Bus({ number, route, currentLocation, createdBy: req.user._id});
+        const bus = new Bus({ number, route, currentLocation, capacity, createdBy: req.user._id});
         await bus.save();
         res.status(201).json(bus);
     } catch (err) {
-        res.status(400).json({ error: err.message });
         console.error(err);
-        res.status(500).json({ message: 'Error creating driver' });
+        res.status(400).json({ message: 'Error creating bus', error: err.message });
     }
 };
 

@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import BusManagement from "./pages/admin/BusManagement";
 // import Unauthorized from './pages/Unauthorized';
 
 
@@ -23,6 +24,7 @@ function App() {
         />
         <Route path="/user-dashboard" element={<ProtectedRoute role={['user']} component={UserDashboard} />} />
         <Route path="/admin-dashboard" element={<ProtectedRoute role={['admin', 'super-admin']} component={AdminDashboard} />} />
+        <Route path="/busmanagement" element={<BusManagement  />} />
         {/* More routes like /dashboard will go here later */}
       </Routes>
     </Router>

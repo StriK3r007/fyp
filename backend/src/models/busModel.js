@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const busSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true },
+    capacity: { type: Number, required: false }, // optional
     route: { type: String, required: true },
     currentLocation: {
         latitude: { type: Number, required: false },
