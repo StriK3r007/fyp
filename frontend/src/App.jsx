@@ -6,7 +6,7 @@ import Signup from './pages/Signup'; // Placeholder for now
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
 import UserDashboard from './pages/UserDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import BusManagement from "./pages/admin/BusManagement";
 // import Unauthorized from './pages/Unauthorized';
 

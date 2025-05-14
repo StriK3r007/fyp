@@ -116,7 +116,7 @@ const BusManagement = () => {
               <td className="p-2 border space-x-2">
                 <button
                   onClick={() => handleEdit(bus)}
-                  className="px-2 py-1 text-yellow-500 text-white rounded"
+                  className="px-2 py-1 bg-yellow-500 text-white rounded"
                 >
                   Edit
                 </button>

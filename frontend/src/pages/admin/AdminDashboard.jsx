@@ -1,7 +1,8 @@
 // src/components/admin/AdminDashboard.jsx
 import { useState } from "react";
 import { LayoutDashboard, Bus, Users, MapPin, Lock, LogOut } from "lucide-react";
-import BusManagement from "../pages/admin/BusManagement"; // Import BusManagement
+import BusManagement from "../admin/BusManagement"; // Import BusManagement
+import DriverManagement from "../admin/DriverManagement"; // Import DriverManagement
 
 
 const navItems = [
@@ -24,7 +25,7 @@ export default function AdminDashboard() {
     <div className="flex w-screen h-screen">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-white p-4 space-y-4">
-        <h1 className="text-2xl font-bold mb-6">Admin Panel</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center text-green-500">Admin Panel</h1>
         {navItems.map((item) => (
           <button
             key={item.view}
@@ -50,7 +51,7 @@ export default function AdminDashboard() {
       <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">
         {activeView === "analytics" && <div>Analytics summary goes here...</div>}
         {activeView === "buses" && <BusManagement />}
-        {activeView === "drivers" && <div>Drivers management CRUD component</div>}
+        {activeView === "drivers" && <DriverManagement />}
         {activeView === "stops" && <div>Stops management CRUD component</div>}
         {activeView === "changePassword" && <div>Password update form</div>}
       </main>
