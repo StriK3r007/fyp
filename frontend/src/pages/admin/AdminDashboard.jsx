@@ -3,6 +3,7 @@ import { useState } from "react";
 import { LayoutDashboard, Bus, Users, MapPin, Lock, LogOut } from "lucide-react";
 import BusManagement from "../admin/BusManagement"; // Import BusManagement
 import DriverManagement from "../admin/DriverManagement"; // Import DriverManagement
+import StopManagement from "../admin/StopManagement"; // Import DriverManagement
 
 
 const navItems = [
@@ -52,7 +53,8 @@ export default function AdminDashboard() {
         {activeView === "analytics" && <div>Analytics summary goes here...</div>}
         {activeView === "buses" && <BusManagement />}
         {activeView === "drivers" && <DriverManagement />}
-        {activeView === "stops" && <div>Stops management CRUD component</div>}
+        {/* {activeView === "stops" && <div>Stops management CRUD component</div>} */}
+        {activeView === "stops" && <StopManagement />}
         {activeView === "changePassword" && <div>Password update form</div>}
       </main>
     </div>
