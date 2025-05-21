@@ -137,7 +137,7 @@ import axios from "axios";
 
 const DriverManagement = () => {
   const [drivers, setDrivers] = useState([]);
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", busId: "", licenseNumber: ""});
   const [editingId, setEditingId] = useState(null);
   const token = localStorage.getItem("token");
 

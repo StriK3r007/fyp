@@ -71,6 +71,7 @@ const StopManagement = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this Stop?")) return;
     try {
       await axios.delete(`/api/stops/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +84,7 @@ const StopManagement = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Manage Stops</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-700">Manage Stops</h2>
 
       <div className="space-y-2 max-w-md">
         <input

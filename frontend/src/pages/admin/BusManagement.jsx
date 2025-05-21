@@ -52,6 +52,7 @@ const BusManagement = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this Bus?")) return;
     try {
       await axios.delete(`/api/buses/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -64,7 +65,7 @@ const BusManagement = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Manage Buses</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-700">Manage Buses</h2>
 
       <div className="space-y-2 max-w-md">
         <input
