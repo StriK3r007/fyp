@@ -1,5 +1,5 @@
 // src/pages/admin/StopManagement.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const StopManagement = () => {
@@ -30,7 +30,7 @@ const StopManagement = () => {
   const handleSubmit = async () => {
     try {
       if (editingId) {
-        await axios.put(`/api/stops/${editingId}`, {
+        await axios.put(`/api/stops/${editingId}`,{
           name: form.name,
           location: {
             latitude: parseFloat(form.latitude),
@@ -41,7 +41,7 @@ const StopManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post("/api/stops", {
+        await axios.post("/api/stops",{
           name: form.name,
           location: {
             latitude: parseFloat(form.latitude),
@@ -84,7 +84,7 @@ const StopManagement = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4 text-gray-700">Manage Stops</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-700">Stop Management</h2>
 
       <div className="space-y-2 max-w-md">
         <input

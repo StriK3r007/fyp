@@ -1,9 +1,11 @@
 // src/components/admin/AdminDashboard.jsx
 import { useState } from "react";
-import { LayoutDashboard, Bus, Users, MapPin, Lock, LogOut } from "lucide-react";
+import { LayoutDashboard, Bus, Users, MapPin, Lock, LogOut, Map } from "lucide-react";
 import BusManagement from "../admin/BusManagement"; // Import BusManagement
 import DriverManagement from "../admin/DriverManagement"; // Import DriverManagement
 import StopManagement from "../admin/StopManagement"; // Import DriverManagement
+import ChangePasswordForm from "../admin/ChangePasswordForm"; 
+import MapView from "../admin/MapView"; //MapView
 
 
 const navItems = [
@@ -11,6 +13,7 @@ const navItems = [
   { label: "Buses", icon: <Bus />, view: "buses" },
   { label: "Drivers", icon: <Users />, view: "drivers" },
   { label: "Stops", icon: <MapPin />, view: "stops" },
+  { label: "MapView", icon: <Map />, view: "map" },
   { label: "Change Password", icon: <Lock />, view: "changePassword" },
 ];
 
@@ -55,7 +58,8 @@ export default function AdminDashboard() {
         {activeView === "drivers" && <DriverManagement />}
         {/* {activeView === "stops" && <div>Stops management CRUD component</div>} */}
         {activeView === "stops" && <StopManagement />}
-        {activeView === "changePassword" && <div>Password update form</div>}
+        {activeView === "map" && <MapView />}
+        {activeView === "changePassword" && <ChangePasswordForm />}
       </main>
     </div>
   );

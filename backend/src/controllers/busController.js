@@ -68,7 +68,18 @@ exports.logTrip = async (req, res) => {
     }
 };
 
+// Public GET for MapView
+exports.getPublicBuses = async (req, res) => {
+    try {
+        const buses = await Bus.find();
+        res.status(200).json(buses);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
+    }
+};
+
 // Geofencing
+
 // const isWithinGeofence = (latitude, longitude, geofence) => {
 //     // Example logic to check if bus is within geofence
 //     return true; // Replace with actual calculation

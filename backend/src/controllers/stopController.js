@@ -46,3 +46,13 @@ exports.deleteStop = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// Public GET for MapView
+exports.getPublicStops = async (req, res) => {
+    try {
+        const stops = await Stop.find();
+        res.status(200).json(stops);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch stops', error: err.message });
+    }
+};

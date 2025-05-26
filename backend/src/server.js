@@ -20,18 +20,28 @@ connectDB();
 
 // App setup
 const server = http.createServer(app); // Use the existing 'app' created in './app'
+
+// old Code
+/*
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173", // Update this to your frontend's URL
     methods: ["GET", "POST"]
   }
 });
+*/
+
+// new Code 
+const io = require('socket.io')(server, {
+  cors: { origin: 'http://localhost:5173' }
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Socket.IO connection
+// Socket.IO connection (old)
+/*
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
@@ -52,6 +62,27 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
+  });
+});
+*/
+
+io.on('connection', (socket) => {
+  console.log('Driver connected');
+
+  socket.on('locationUpdate', async ({ latitude, longitude, driverId }) => {
+    console.log(`Location from ${driverId}:`, latitude, longitude);
+
+    // Update driver/bus location in DB or in-memory store
+    await Driver.findByIdAndUpdate(driverId, {
+      currentLocation: { latitude, longitude },
+    });
+
+    // You can also emit it to public map viewers
+    io.emit('busLocationUpdate', { driverId, latitude, longitude });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Driver disconnected');
   });
 });
 
