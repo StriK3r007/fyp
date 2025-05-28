@@ -9,9 +9,29 @@ exports.createBus = async (req, res) => {
             return res.status(403).json({ message: 'You do not have permission to create drivers' });
         }
 
+        // --- SERVER-SIDE VALIDATION ---
+                if (!number || number.trim() === '') {
+                    return res.status(400).json({ message: 'Bus number is required.' });
+                }
+                // Check if the user already exists
+                const existingBus = await Bus.findOne({ number });
+                if (existingBus) {
+                    console.log('Bus with this number already exists');
+                    return res.status(400).json({ message: 'Bus with this number already exists' });
+                }
+                if (!route || route.trim() === '') {
+                    return res.status(400).json({ message: 'Route is required.' });
+                }
+                // Check if no phone
+                if (!capacity || capacity.trim() === '') {
+                    return res.status(400).json({ message: 'Capacity is required.' });
+                }
+                // --- END OF VALIDATION ---
+
         const bus = new Bus({ number, route, currentLocation, capacity, createdBy: req.user._id});
         await bus.save();
-        res.status(201).json(bus);
+
+        res.status(201).json({ message: 'Bus created Succesfully', bus });
     } catch (err) {
         console.error(err);
         res.status(400).json({ message: 'Error creating bus', error: err.message });
@@ -77,6 +97,26 @@ exports.getPublicBuses = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
     }
 };
+
+exports.updateBusLocation = async (req, res) => {
+    const { latitude, longitude } = req.body;
+    const busId = req.params.id;
+
+    try {
+        const bus = await Bus.findByIdAndUpdate(busId, {
+        latitude,
+        longitude,
+        lastUpdated: Date.now()
+    });
+
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+
+    res.status(200).json({ message: 'Location updated' });
+    } catch (err) {
+    console.error('Error updating location:', err);
+        res.status(500).json({ message: 'Failed to update location' });
+    }
+}
 
 // Geofencing
 

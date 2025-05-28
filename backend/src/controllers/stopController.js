@@ -12,8 +12,42 @@ exports.getStops = async (req, res) => {
 
 // Create a Stop
 exports.createStop = async (req, res) => {
+    console.log('--- createStop function called ---'); 
     const { name, location, route } = req.body;
     try {
+        // Ensure the user has the correct role to create a stops
+        if (req.user.role !== 'admin') {
+            console.log('Access denied: not admin');
+            return res.status(403).json({ message: 'You do not have permission to create stops' });
+        }
+
+        // --- SERVER-SIDE VALIDATION ---
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ message: 'Stop Name is required.' });
+        }
+        if (!location || typeof location !== 'object' || location === null || !('latitude' in location) || !('longitude' in location)) {
+            return res.status(400).json({ message: 'Stop Location is required.' });
+        }
+        const latitude = location.latitude;
+        const longitude = location.longitude;
+        if (typeof latitude !== 'number' || isNaN(latitude)) {
+            return res.status(400).json({ message: 'Latitude must be a valid number.' });
+        }
+        if (typeof longitude !== 'number' || isNaN(longitude)) {
+            return res.status(400).json({ message: 'Longitude must be a valid number.' });
+        }
+        // Check if the stop already exists
+        const existingStop = await Stop.findOne({ name });
+        if (existingStop) {
+            console.log('Stop with this name already exists');
+            return res.status(400).json({ message: 'Stop with this name already exists' });
+        }
+        // Check if no route
+        if (!route) {
+            return res.status(400).json({ message: 'Route is required.' });
+        }
+        // --- END OF VALIDATION ---
+
         const stop = new Stop({ name, location, route });
         await stop.save();
         res.status(201).json(stop);

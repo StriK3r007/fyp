@@ -5,7 +5,6 @@ const driverSchema = new mongoose.Schema({
     email: { type: String, required: true },
     phone: { type: String, required: true },
     busId: { type: String },
-    // driverModel.js
     bus: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bus',

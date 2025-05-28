@@ -21,6 +21,8 @@ const Login = () => {
         navigate('/admin-dashboard');
       } else if (role === 'user') {
         navigate('/user-dashboard');
+      } else if (role === 'driver') {
+        navigate('/driver/dashboard');
       } else {
         navigate('/unauthorized');
       }

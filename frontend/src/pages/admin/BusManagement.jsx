@@ -1,21 +1,24 @@
 // src/pages/admin/BusManagement.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import toast from 'react-hot-toast';
 
 const BusManagement = () => {
   const [buses, setBuses] = useState([]);
   const [form, setForm] = useState({ number: "", route: "", capacity: "" });
   const [editingId, setEditingId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track if updating
   const token = localStorage.getItem("token");
 
   const fetchBuses = async () => {
     try {
       const res = await axios.get("/api/buses", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },  
       });
       setBuses(res.data);
     } catch (err) {
       console.error("Failed to fetch buses:", err);
+      toast.error("Failed to fetch buses:", err);
     }
   };
 
@@ -28,6 +31,7 @@ const BusManagement = () => {
   };
 
   const handleSubmit = async () => {
+    setIsSubmitting(true); // Disable form buttons during submission
     try {
       if (editingId) {
         await axios.put(`/api/buses/${editingId}`, form, {
@@ -41,8 +45,12 @@ const BusManagement = () => {
       setForm({ number: "", route: "", capacity: "" });
       setEditingId(null);
       fetchBuses();
+      toast.success(editingId ? 'Bus updated successfully!' : 'Bus added successfully!'); // Show success toast
     } catch (err) {
       console.error("Save failed:", err);
+      toast.error(err.response?.data?.message || 'Failed to save bus.'); // Show error toast
+    } finally {
+      setIsSubmitting(false); // Re-enable form buttons after submission
     }
   };
 
@@ -51,17 +59,30 @@ const BusManagement = () => {
     setEditingId(bus._id);
   };
 
+  const handleCancelEdit = () => {
+    setForm({ number: "", route: "", capacity: "" });
+    setEditingId(null);
+  };
+
   const handleDelete = async (id) => {
+    if (isSubmitting) {
+      return; // Prevent deletion while updating
+    }
     if (!window.confirm("Delete this Bus?")) return;
     try {
       await axios.delete(`/api/buses/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchBuses();
+      toast.success('Bus deleted successfully!'); // Show success toast
     } catch (err) {
       console.error("Delete failed:", err);
+      toast.error(err.response?.data?.message || 'Failed to delete bus.'); // Show error toast
     }
   };
+
+  const isRowActionDisabled = !!editingId || isSubmitting;
+
 
   return (
     <div className="p-6">
@@ -73,14 +94,14 @@ const BusManagement = () => {
           placeholder="Bus Number"
           value={form.number}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="route"
           placeholder="Route"
           value={form.route}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="capacity"
@@ -89,14 +110,24 @@ const BusManagement = () => {
           type="number"
           value={form.capacity}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <button
           onClick={handleSubmit}
           className="px-4 py-2 bg-blue-600 text-white rounded"
+          disabled={isSubmitting}
         >
           {editingId ? "Update Bus" : "Add Bus"}
         </button>
+        {editingId && (
+          <button
+            onClick={handleCancelEdit}
+            className="px-4 py-2 bg-gray-400 text-white rounded ml-2"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       <table className="w-full mt-6 border-2 border-green-500 text-left">
@@ -118,12 +149,14 @@ const BusManagement = () => {
                 <button
                   onClick={() => handleEdit(bus)}
                   className="px-2 py-1 bg-yellow-500 text-white rounded"
+                  disabled={isRowActionDisabled}
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(bus._id)}
                   className="px-2 py-1 text-red-600  rounded"
+                  disabled={isRowActionDisabled}
                 >
                   Delete
                 </button>

@@ -134,12 +134,15 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import toast from 'react-hot-toast';
 
 const DriverManagement = () => {
   const [drivers, setDrivers] = useState([]);
   const [form, setForm] = useState({ name: "", email: "", phone: "", busId: "", licenseNumber: ""});
   const [editingId, setEditingId] = useState(null);
   const token = localStorage.getItem("token");
+  const [buses, setBuses] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track if updating
 
   const fetchDrivers = async () => {
     try {
@@ -149,10 +152,21 @@ const DriverManagement = () => {
       setDrivers(res.data);
     } catch (err) {
       console.error("Failed to fetch drivers:", err);
+      toast.error("Failed to fetch drivers:", err);
+    }
+  };
+  const fetchBuses = async () => {
+    try {
+      const res = await axios.get('/api/buses/public'); // make sure this is a public route
+      setBuses(res.data);
+    } catch (err) {
+      console.error('Failed to fetch buses:', err);
+      toast.error('Failed to fetch buses:', err);
     }
   };
 
   useEffect(() => {
+    fetchBuses();
     fetchDrivers();
   }, []);
 
@@ -161,6 +175,7 @@ const DriverManagement = () => {
   };
 
   const handleSubmit = async () => {
+    setIsSubmitting(true); // Disable form buttons during submission
     try {
       if (editingId) {
         await axios.put(`/api/drivers/${editingId}`, form, {
@@ -174,8 +189,12 @@ const DriverManagement = () => {
       setForm({ name: "", email: "", phone: "", busId: "", licenseNumber: "" });
       setEditingId(null);
       fetchDrivers();
+      toast.success(editingId ? 'Driver updated successfully!' : 'Driver added successfully!'); // Show success toast
     } catch (err) {
       console.error("Save failed:", err);
+      toast.error(err.response?.data?.message || 'Failed to save driver.'); // Show error toast
+    } finally {
+      setIsSubmitting(false); // Re-enable form buttons after submission
     }
   };
 
@@ -189,17 +208,29 @@ const DriverManagement = () => {
     setEditingId(driver._id);
   };
 
+  const handleCancelEdit = () => {
+    setForm({ number: "", route: "", capacity: "" });
+    setEditingId(null);
+  };
+
   const handleDelete = async (id) => {
+    if (isSubmitting) {
+      return; // Prevent deletion while updating
+    }
     if (!window.confirm("Delete this driver?")) return;
     try {
       await axios.delete(`/api/drivers/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchDrivers();
+      toast.success('Driver deleted successfully!'); // Show success toast
     } catch (err) {
-      console.error("Error deleting driver:", err);
+      console.error("Failed to delete driver:", err);
+      toast.error(err.response?.data?.message || 'Failed to delete driver.'); // Show error toast
     }
   };
+
+  const isRowActionDisabled = !!editingId || isSubmitting;
 
   return (
     <div className="p-6">
@@ -211,42 +242,64 @@ const DriverManagement = () => {
           placeholder="Name"
           value={form.name}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="email"
           placeholder="Email"
           value={form.email}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="phone"
           placeholder="Phone Number"
           value={form.phone}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
-        <input
+        {/* <input
           name="busId"
           placeholder="Bus ID"
           value={form.busId}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
-        />
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
+        /> */}
+        <select
+          value={form.busId}
+          onChange={(e) => setForm({ ...form, busId: e.target.value })}
+          className="border-2 border-green-600 p-2 rounded w-full text-gray-700"
+        >
+          <option value="">Select a bus</option>
+            {buses.map((bus) => (
+          <option key={bus._id} value={bus._id}>
+            {bus.name || bus.number || bus._id}
+          </option>
+          ))}
+        </select>
         <input
           name="licenseNumber"
           placeholder="License Number"
           value={form.licenseNumber}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <button
           onClick={handleSubmit}
           className="px-4 py-2 bg-blue-600 text-white rounded"
+          disabled={isSubmitting}
         >
           {editingId ? "Update Driver" : "Add Driver"}
         </button>
+        {editingId && (
+          <button
+            onClick={handleCancelEdit}
+            className="px-4 py-2 bg-gray-400 text-white rounded ml-2"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       <table className="w-full mt-6 border-collapse border-2 border-green-500 text-left">
@@ -272,12 +325,14 @@ const DriverManagement = () => {
                 <button
                   onClick={() => handleEdit(driver)}
                   className="px-2 py-1 bg-yellow-500 text-white rounded"
+                  disabled={isRowActionDisabled}
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(driver._id)}
                   className="px-2 py-1 text-red-600 rounded"
+                  disabled={isRowActionDisabled}
                 >
                   Delete
                 </button>

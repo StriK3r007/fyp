@@ -1,6 +1,7 @@
 // src/pages/admin/StopManagement.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from 'react-hot-toast';
 
 const StopManagement = () => {
   const [stops, setStops] = useState([]);
@@ -16,6 +17,7 @@ const StopManagement = () => {
       setStops(res.data);
     } catch (err) {
       console.error("Failed to fetch stops:", err);
+      toast.error("Failed to fetch stops:", err);
     }
   };
 
@@ -55,8 +57,10 @@ const StopManagement = () => {
       setForm({ name: "", latitude: "", longitude: "", route: "" });
       setEditingId(null);
       fetchStops();
+      toast.success(editingId ? 'Stop updated successfully!' : 'Stop added successfully!'); // Show success toast
     } catch (err) {
       console.error("Save failed:", err);
+      toast.error(err.response?.data?.message || 'Failed to save stop.'); // Show error toast
     }
   };
 
@@ -77,8 +81,10 @@ const StopManagement = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchStops();
+      toast.success('Stop deleted successfully!'); // Show success toast
     } catch (err) {
       console.error("Delete failed:", err);
+      toast.error(err.response?.data?.message || 'Failed to delete stop.'); // Show error toast
     }
   };
 
@@ -92,7 +98,7 @@ const StopManagement = () => {
           placeholder="Stop Name"
           value={form.name}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="latitude"
@@ -100,7 +106,7 @@ const StopManagement = () => {
           type="number"
           value={form.latitude}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="longitude"
@@ -108,14 +114,14 @@ const StopManagement = () => {
           type="number"
           value={form.longitude}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <input
           name="route"
           placeholder="Route"
           value={form.route}
           onChange={handleChange}
-          className="w-full border p-2 rounded text-gray-700"
+          className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         />
         <button
           onClick={handleSubmit}

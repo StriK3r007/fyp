@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware'); // Import the authMiddleware
 const checkRole = require('../middlewares/checkRole');
-const { getBuses, createBus, updateBus, deleteBus, logTrip, getPublicBuses } = require('../controllers/busController');
+const { getBuses, createBus, updateBus, deleteBus, logTrip, getPublicBuses, updateBusLocation } = require('../controllers/busController');
 
 
 // ✅ Public route for MapView
@@ -14,5 +14,6 @@ router.post('/', authMiddleware, checkRole(['admin', 'super-admin']), createBus)
 router.put('/:id', authMiddleware, checkRole(['admin', 'super-admin']), updateBus);
 router.delete('/:id', authMiddleware, checkRole(['admin', 'super-admin']), deleteBus);
 router.post('/:id/logTrip', authMiddleware, checkRole(['admin', 'super-admin']), logTrip);
+router.post('/:id/location', authMiddleware, checkRole(['driver']), updateBusLocation);
 
 module.exports = router;

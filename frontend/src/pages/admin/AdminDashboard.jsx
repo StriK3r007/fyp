@@ -1,9 +1,9 @@
 // src/components/admin/AdminDashboard.jsx
 import { useState } from "react";
-import { LayoutDashboard, Bus, Users, MapPin, Lock, LogOut, Map } from "lucide-react";
+import { LayoutDashboard, Bus, Users, MapPin, Lock, LogOut, Map, Route } from "lucide-react";
 import BusManagement from "../admin/BusManagement"; // Import BusManagement
 import DriverManagement from "../admin/DriverManagement"; // Import DriverManagement
-import StopManagement from "../admin/StopManagement"; // Import DriverManagement
+import StopManagement from "../admin/StopManagement"; // Import StopManagement
 import ChangePasswordForm from "../admin/ChangePasswordForm"; 
 import MapView from "../admin/MapView"; //MapView
 
@@ -28,8 +28,8 @@ export default function AdminDashboard() {
   return (
     <div className="flex w-screen h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-4 space-y-4">
-        <h1 className="text-2xl font-bold mb-6 text-center text-green-500">Admin Panel</h1>
+      <aside className="w-64 bg-green-400 text-white p-4 space-y-4">
+        <h1 className="text-2xl font-bold mb-6 text-center text-green-900">Admin Panel</h1>
         {navItems.map((item) => (
           <button
             key={item.view}

@@ -25,6 +25,8 @@ export default function MapView() {
     const socket = io('http://localhost:5000');
 
     const fetchData = async () => {
+      // debugger;
+
       try {
         const [busesRes, stopsRes] = await Promise.all([
           axios.get("/api/buses/public"),
@@ -72,7 +74,7 @@ export default function MapView() {
         //   icon={busIcon}
         >
           <Popup>
-            <Bus className="inline-block mr-2" size={20} />
+            <Bus className="inline-block mr-2 text-green-400" size={20} />
             <strong>{bus.name}</strong><br />
             Driver: {bus.driverName}
           </Popup>
@@ -85,7 +87,7 @@ export default function MapView() {
         //   icon={stopIcon}
         >
           <Popup>
-            <MapPin className="inline-block mr-2" size={20} />
+            <MapPin className="inline-block mr-2 text-green-800" size={20} />
             <strong>{stop.name}</strong>
           </Popup>
         </Marker>

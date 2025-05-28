@@ -254,10 +254,10 @@ const UserDashboard = () => {
   }
 
   return (
-    <div className="flex w-screen h-screen bg-gray-100">
+    <div className="flex w-screen h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-6">
-        <h2 className="text-xl font-bold mb-6 text-green-500">User Dashboard</h2>
+      <aside className="w-64 bg-green-400 text-white p-4 space-y-4">
+        <h2 className="text-2xl font-bold mb-6 text-center text-green-900">User Dashboard</h2>
         <nav className="space-y-4">
           <button onClick={showUserProfile} className="block text-blue-600 font-medium focus:outline-none">
             Profile
@@ -273,7 +273,7 @@ const UserDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto">
+      <main className="flex-1 p-6 overflow-y-auto bg-gray-100">
         <h1 className="text-2xl font-bold mb-6 text-gray-700">Welcome Back <span className="text-gray-500 uppercase">{user.name}</span> </h1>
 
         {showProfile && (
