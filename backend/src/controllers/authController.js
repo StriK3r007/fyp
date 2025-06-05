@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const Driver = require('../models/driverModel');
+const Bus = require('../models/busModel');
 const jwtUtils = require('../utils/jwtUtils');
 
 
@@ -105,14 +107,28 @@ exports.deleteUser = async (req, res) => {
 // Get logged in user
 exports.getLoggedInUser = async (req, res) => {
     try {
+        // 1. Find the User
         const user = await User.findById(req.user.id).select('-password');
         if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // let driverInfo = null;
+        let assignedBus = null;
+
+        if (user.role === 'driver') {
+            // 2. Find the corresponding Driver and populate assignedBus
+            const driver = await Driver.findOne({ email: user.email }).populate('assignedBus');
+            if (driver) {
+                // driverInfo = { assignedBus: driver.assignedBus };
+                assignedBus = driver.assignedBus;
+            }
+        }
 
         res.status(200).json({
             _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
+            assignedBus: assignedBus, // Include the assignedBus here
         });
     } catch (err) {
         console.error('Error fetching logged-in user:', err);

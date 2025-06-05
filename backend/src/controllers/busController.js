@@ -1,4 +1,5 @@
 const Bus = require('../models/busModel');
+const Driver = require('../models/driverModel'); // Import the Driver model
 
 // Create a Bus
 exports.createBus = async (req, res) => {
@@ -48,17 +49,28 @@ exports.getBuses = async (req, res) => {
     }
 };
 
+// Get all Buses with their Drivers
+// exports.getBuses = async (req, res) => {
+//   try {
+//     const buses = await Bus.find().populate('driver', '_id name'); // Explicitly select name
+//     console.log('Admin Buses fetched (before response):', JSON.stringify(buses, null, 2));
+//     res.status(200).json(buses);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 // Update a Bus
 exports.updateBus = async (req, res) => {
-    const { id } = req.params;
-    const updates = req.body;
-    try {
-        const bus = await Bus.findByIdAndUpdate(id, updates, { new: true });
-        if (!bus) return res.status(404).json({ error: 'Bus not found' });
-        res.status(200).json(bus);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
+  const { id } = req.params;
+  const updates = req.body;
+  try {
+    const bus = await Bus.findByIdAndUpdate(id, updates, { new: true });
+    if (!bus) return res.status(404).json({ error: 'Bus not found' });
+    res.status(200).json(bus);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 };
 
 // Delete a Bus
@@ -89,13 +101,72 @@ exports.logTrip = async (req, res) => {
 };
 
 // Public GET for MapView
+// exports.getPublicBuses = async (req, res) => {
+//     try {
+//         const buses = await Bus.find().populate('driver').select('-trips'); // Populate the 'driver' field and exclude 'trips' for brevity
+//         res.status(200).json(buses);
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
+//     }
+// };
+
+// exports.getPublicBuses = async (req, res) => {
+//     try {
+//         const buses = await Bus.find()
+//             .populate('driver')
+//             .select('-trips')
+//             .select('number route currentLocation driver'); // Explicitly select these fields
+//         res.status(200).json(buses);
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
+//     }
+// };
+
+// exports.getPublicBuses = async (req, res) => {
+//     try {
+//         const buses = await Bus.find()
+//             .populate('driver')
+//             .select('-trips')
+//             .lean(); // Convert Mongoose documents to plain JavaScript objects
+
+//         const busesWithLocationAndDriver = buses.map(bus => ({
+//             ...bus,
+//             currentLocation: bus.currentLocation,
+//             driver: bus.driver
+//         }));
+
+//         console.log('Buses being sent:', busesWithLocationAndDriver); // Add this line
+//         res.status(200).json(busesWithLocationAndDriver);
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
+//     }
+// };
+
+// exports.getPublicBuses = async (req, res) => {
+//     try {
+//         const buses = await Bus.find()
+//             .select('number route capacity currentLocation driver') // Select initial fields
+//             .populate('driver') // Populate driver
+//             .select('number route capacity currentLocation driver'); // Re-select after population (may be redundant but let's try)
+//         res.status(200).json(buses);
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
+//     }
+// };
+
 exports.getPublicBuses = async (req, res) => {
-    try {
-        const buses = await Bus.find();
-        res.status(200).json(buses);
-    } catch (err) {
-        res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
-    }
+  try {
+    const buses = await Bus.find()
+      .select('_id number route') // Select the fields you need for the dropdown
+      .populate({
+        path: 'driver',
+        select: '_id name userId' // You might not need to populate driver here for the dropdown
+      });
+    console.log('All public buses fetched (before response):', JSON.stringify(buses, null, 2));
+    res.status(200).json(buses);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch buses', error: err.message });
+  }
 };
 
 exports.updateBusLocation = async (req, res) => {

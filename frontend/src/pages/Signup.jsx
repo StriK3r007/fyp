@@ -19,7 +19,7 @@ const Signup = () => {
       });
       localStorage.setItem('token', res.data.token);
       alert('Signup successful!');
-      navigate('/dashboard'); // Will build this next
+      navigate('/login'); // Will build this next
     } catch (err) {
       console.error(err);
       alert('Signup failed');

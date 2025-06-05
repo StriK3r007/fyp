@@ -7,6 +7,8 @@ const mongoURI = process.env.MONGO_URI;
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const Driver = require('./models/driverModel'); //driverModel
+const Bus = require('./models/busModel'); //busModel
 // const app = express();
 
 
@@ -68,12 +70,24 @@ io.on('connection', (socket) => {
 
 io.on('connection', (socket) => {
   console.log('Driver connected');
+  socket.emit('testEvent', { message: 'Hello from server!' }); // Emit on connection
 
   socket.on('locationUpdate', async ({ latitude, longitude, driverId }) => {
-    console.log(`Location from ${driverId}:`, latitude, longitude);
+    console.log(`Received location from driver  ${driverId}:`, latitude, longitude);
+    console.log('Driver ID received in locationUpdate:', driverId); // ADD THIS LINE
+    socket.emit('testEvent', { message: 'Hello from server!' });
 
     // Update driver/bus location in DB or in-memory store
     await Driver.findByIdAndUpdate(driverId, {
+      currentLocation: { latitude, longitude },
+    });
+
+    // Optionally: Save to DB if needed
+    await Bus.findOneAndUpdate({ driver: driverId  }, {
+      // $set: {
+      //   "location.latitude": latitude,
+      //   "location.longitude": longitude
+      // }
       currentLocation: { latitude, longitude },
     });
 
@@ -113,7 +127,12 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
 
-app.listen(PORT, () => {
+// 
+// app.listen(PORT, () => {
+//   console.log(`Server running on http://localhost:${PORT}`);
+// });
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 

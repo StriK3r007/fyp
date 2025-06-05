@@ -145,13 +145,16 @@ const DriverManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false); // New state to track if updating
 
   const fetchDrivers = async () => {
+    console.log('fetchDrivers function called'); // Add this line 
     try {
       const res = await axios.get("/api/drivers", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("API /api/drivers response:", res); 
       setDrivers(res.data);
     } catch (err) {
       console.error("Failed to fetch drivers:", err);
+      console.log("Full error object:", err); // Add this line
       toast.error("Failed to fetch drivers:", err);
     }
   };
@@ -175,26 +178,44 @@ const DriverManagement = () => {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true); // Disable form buttons during submission
+    console.log("Submitting form:", form);
+    setIsSubmitting(true);
     try {
+      let driverResponse;
       if (editingId) {
-        await axios.put(`/api/drivers/${editingId}`, form, {
+        driverResponse = await axios.put(`/api/drivers/${editingId}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post("/api/drivers", form, {
+        driverResponse = await axios.post("/api/drivers", form, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      setForm({ name: "", email: "", phone: "", busId: "", licenseNumber: "" });
+
+      const driverId = editingId || driverResponse.data.driver._id; // Get the driver's ID
+
+      if (form.busId) {
+        try {
+          await axios.put(`/api/buses/${form.busId}`, { driver: driverId }, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          toast.success(`Driver ${editingId ? 'updated and assigned' : 'created and assigned'} to bus!`);
+        } catch (busUpdateErr) {
+          console.error("Error updating bus driver:", busUpdateErr);
+          toast.error("Error assigning driver to bus.");
+        }
+      } else {
+        toast.success(editingId ? 'Driver updated!' : 'Driver added!');
+      }
+
+      setForm({ name: "", email: "", phone: "", busId: "", licenseNumber: ""});
       setEditingId(null);
       fetchDrivers();
-      toast.success(editingId ? 'Driver updated successfully!' : 'Driver added successfully!'); // Show success toast
     } catch (err) {
       console.error("Save failed:", err);
-      toast.error(err.response?.data?.message || 'Failed to save driver.'); // Show error toast
+      toast.error(err.response?.data?.message || 'Failed to save driver.');
     } finally {
-      setIsSubmitting(false); // Re-enable form buttons after submission
+      setIsSubmitting(false);
     }
   };
 
@@ -266,6 +287,7 @@ const DriverManagement = () => {
           className="w-full border-2 border-green-600 p-2 rounded text-gray-700"
         /> */}
         <select
+          name="busId"
           value={form.busId}
           onChange={(e) => setForm({ ...form, busId: e.target.value })}
           className="border-2 border-green-600 p-2 rounded w-full text-gray-700"
@@ -319,7 +341,7 @@ const DriverManagement = () => {
               <td className="p-2 border border-green-500 text-gray-800">{driver.name}</td>
               <td className="p-2 border border-green-500 text-gray-800">{driver.email}</td>
               <td className="p-2 border border-green-500 text-gray-800">{driver.phone}</td>
-              <td className="p-2 border border-green-500 text-gray-800">{driver.busId}</td>
+              <td className="p-2 border border-green-500 text-gray-800">{driver.busId?.number}</td>
               <td className="p-2 border border-green-500 text-gray-800">{driver.licenseNumber}</td>
               <td className="p-2 border space-x-2">
                 <button

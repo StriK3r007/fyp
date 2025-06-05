@@ -5,7 +5,7 @@ import BusManagement from "../admin/BusManagement"; // Import BusManagement
 import DriverManagement from "../admin/DriverManagement"; // Import DriverManagement
 import StopManagement from "../admin/StopManagement"; // Import StopManagement
 import ChangePasswordForm from "../admin/ChangePasswordForm"; 
-import MapView from "../admin/MapView"; //MapView
+import MapView from "../../components/MapComponent"; //MapView
 
 
 const navItems = [

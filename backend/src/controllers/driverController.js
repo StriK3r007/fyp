@@ -62,7 +62,7 @@ exports.createDriver = async (req, res) => {
         await user.save();
         console.log('User saved:', user);
 
-        const driver = new Driver({ name, email, phone, busId, licenseNumber, createdBy: req.user._id});
+        const driver = new Driver({ name, email, phone, busId, licenseNumber, assignedBus: busId, userId: user._id, createdBy: req.user._id}); // Assign busId to assignedBus
         await driver.save();
         console.log('Driver saved:', driver);
 
@@ -70,16 +70,15 @@ exports.createDriver = async (req, res) => {
         // res.status(201).json(driver);
         res.status(201).json({ message: 'Driver and user account created', driver });
     } catch (err) {
-        res.status(400).json({ error: err.message });
         console.error(err);
-        res.status(500).json({ message: 'Error creating driver' });
+        res.status(500).json({ message: 'Error creating driver', error: err.message }); 
     }
 };
 
 // Get all Drivers
 exports.getDrivers = async (req, res) => {
     try {
-        const drivers = await Driver.find().populate('assignedBus');
+        const drivers = await Driver.find().populate('busId');
         res.status(200).json(drivers);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -91,9 +90,38 @@ exports.updateDriver = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     try {
-        const driver = await Driver.findByIdAndUpdate(id, updates, { new: true });
-        if (!driver) return res.status(404).json({ error: 'Driver not found' });
-        res.status(200).json(driver);
+        // Find the driver by ID
+        const driver = await Driver.findById(id);
+        if (!driver) {
+            return res.status(404).json({ error: 'Driver not found' });
+        }
+
+        // Update the Driver document
+        const updatedDriver = await Driver.findByIdAndUpdate(id, updates, { new: true });
+
+        // Update the corresponding User (matched by email)
+        const user = await User.findOne({ email: driver.email });
+        if (user) {
+            const userUpdates = {
+                name: updates.name || user.name,
+                email: updates.email || user.email,
+            };
+
+            // If the email is being updated, change it
+            if (updates.email && updates.email !== user.email) {
+                const emailExists = await User.findOne({ email: updates.email });
+                if (emailExists && emailExists._id.toString() !== user._id.toString()) {
+                    return res.status(400).json({ error: 'Email is already in use by another user' });
+                }
+                userUpdates.email = updates.email;
+            }
+
+            await User.findByIdAndUpdate(user._id, userUpdates, { new: true });
+        }
+
+        // const driver = await Driver.findByIdAndUpdate(id, updates, { new: true });
+        // if (!driver) return res.status(404).json({ error: 'Driver not found' });
+        res.status(200).json(updatedDriver);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -103,8 +131,21 @@ exports.updateDriver = async (req, res) => {
 exports.deleteDriver = async (req, res) => {
     const { id } = req.params;
     try {
-        const driver = await Driver.findByIdAndDelete(id);
+        // 1. Find the driver by ID
+        const driver = await Driver.findById(id);
         if (!driver) return res.status(404).json({ error: 'Driver not found' });
+
+        // 2. Delete the corresponding user by email
+        const deletedUser = await User.findOneAndDelete({ email: driver.email });
+        if (!deletedUser) {
+            console.warn('Associated user not found or already deleted');
+        }
+
+        // 3. Delete the driver record
+        await Driver.findByIdAndDelete(id);
+        console.log(`Deleted driver ${driver.name} and user ${deletedUser?.email}`);
+        // const driver = await Driver.findByIdAndDelete(id);
+        // if (!driver) return res.status(404).json({ error: 'Driver not found' });
         res.status(200).json({ message: 'Driver deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
