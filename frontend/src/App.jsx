@@ -48,11 +48,12 @@ import Login from './pages/Login';
 import Signup from './pages/Signup'; // Placeholder for now
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
+import HomePage from './pages/HomePage';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import BusManagement from "./pages/admin/BusManagement";
 import DriverDashboard from "./pages/driver/DriverDashboard";
-import MapView from './components/MapComponent';
+import MapComponent from './components/MapComponent';
 // import Unauthorized from './pages/Unauthorized';
 
 
@@ -60,8 +61,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Navigate from the root path directly to /mapview */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<HomePage />} />
+        {/* <Route path="/" element={<TestMapPage />} /> */}
+
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         {/* <Route

@@ -66,8 +66,6 @@ exports.createDriver = async (req, res) => {
         await driver.save();
         console.log('Driver saved:', driver);
 
-
-        // res.status(201).json(driver);
         res.status(201).json({ message: 'Driver and user account created', driver });
     } catch (err) {
         console.error(err);
