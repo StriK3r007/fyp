@@ -19,7 +19,12 @@ export default function Navbar({onSelectStop}) {
           setUser(res.data);
         }
       } catch (err) {
-        console.error('Failed to fetch user:', err);
+        if (err.response?.status === 401) {
+          console.warn("Session expired. Logging out...");
+          localStorage.removeItem("token");
+          window.location.href = "/login"; // or use your router to redirect
+  }
+        // console.error('Failed to fetch user:', err);
       }
     };
     

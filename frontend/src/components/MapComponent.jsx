@@ -144,10 +144,11 @@ import { Bus, MapPin, Info } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 
 let socket;
 
+// 📍 Pan map to selected stop when changed
 function PanToStop({ selectedStop }) {
   const map = useMap();
 
@@ -158,13 +159,12 @@ function PanToStop({ selectedStop }) {
 
     if (Array.isArray(coords) && coords.length === 2) {
       const [lngCoord, latCoord] = coords;
-      if (typeof latCoord === 'number' && typeof lngCoord === 'number') {
+      if (typeof latCoord === "number" && typeof lngCoord === "number") {
         map.flyTo([latCoord, lngCoord], 16, { animate: true });
       }
-    } else if (typeof lat === 'number' && typeof lng === 'number') {
+    } else if (typeof lat === "number" && typeof lng === "number") {
       map.flyTo([lat, lng], 16, { animate: true });
     }
-    // Else skip pan
   }, [selectedStop, map]);
 
   return null;
@@ -172,7 +172,7 @@ function PanToStop({ selectedStop }) {
 
 // 🔍 Utility to calculate distance in km between two lat/lng pairs
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radius of Earth
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -188,18 +188,21 @@ export default function MapComponent({ selectedStop }) {
   const [buses, setBuses] = useState([]);
   const [stops, setStops] = useState([]);
   const [fallbackMarker, setFallbackMarker] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
 
+  // 🚀 INIT
   useEffect(() => {
-    socket = io('http://localhost:5000');
-    console.log('Connecting to Socket.IO...');
+    socket = io("http://localhost:5000");
+    console.log("Connecting to Socket.IO...");
 
-    socket.on('connect', () => {
-      console.log('Socket.IO connected!');
+    socket.on("connect", () => {
+      console.log("Socket.IO connected!");
     });
 
-    socket.on('busLocationUpdate', ({ driverId, latitude, longitude }) => {
-      setBuses(prev =>
-        prev.map(bus =>
+    // 🔄 Update bus locations in real-time
+    socket.on("busLocationUpdate", ({ driverId, latitude, longitude }) => {
+      setBuses((prev) =>
+        prev.map((bus) =>
           bus.driver?.userId === driverId
             ? { ...bus, currentLocation: { latitude, longitude } }
             : bus
@@ -207,6 +210,23 @@ export default function MapComponent({ selectedStop }) {
       );
     });
 
+    // 📍 Get user's current location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        },
+        (err) => {
+          console.warn("Geolocation error:", err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    // 🧠 Fetch buses and stops
     const fetchData = async () => {
       try {
         const [busRes, stopRes] = await Promise.all([
@@ -227,30 +247,35 @@ export default function MapComponent({ selectedStop }) {
     };
   }, []);
 
+  // 🟡 Fallback marker if stop location is missing
   useEffect(() => {
     const coords = selectedStop?.location?.coordinates;
     const lat = selectedStop?.location?.latitude;
     const lng = selectedStop?.location?.longitude;
 
-    // If no valid coordinates, drop fallback marker in center
     if (
       (!Array.isArray(coords) || coords.length < 2) &&
-      (typeof lat !== 'number' || typeof lng !== 'number')
+      (typeof lat !== "number" || typeof lng !== "number")
     ) {
-      setFallbackMarker([30.1775, 66.9900]); // default fallback marker
+      setFallbackMarker([30.1775, 66.9900]);
     } else {
-      setFallbackMarker(null); // clear fallback if stop is valid
+      setFallbackMarker(null);
     }
   }, [selectedStop]);
 
+  // 🔍 Get nearby buses (within 2 km of selected stop)
   const getNearbyBuses = () => {
-    if (!selectedStop?.location?.coordinates || selectedStop.location.coordinates.length < 2) return [];
+    if (
+      !selectedStop?.location?.coordinates ||
+      selectedStop.location.coordinates.length < 2
+    )
+      return [];
 
     const [stopLng, stopLat] = selectedStop.location.coordinates;
 
     return buses
-      .filter(bus => bus.currentLocation)
-      .map(bus => {
+      .filter((bus) => bus.currentLocation)
+      .map((bus) => {
         const distance = getDistanceFromLatLonInKm(
           stopLat,
           stopLng,
@@ -259,7 +284,7 @@ export default function MapComponent({ selectedStop }) {
         );
         return { ...bus, distance };
       })
-      .filter(bus => bus.distance < 2) // 🎯 Filter buses within 2 km
+      .filter((bus) => bus.distance < 2)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 3);
   };
@@ -272,11 +297,15 @@ export default function MapComponent({ selectedStop }) {
       zoom={15}
       scrollWheelZoom={true}
       className="h-screen w-full z-0"
+      onClick={(e) => {
+      const { lat, lng } = e.latlng;
+      setFallbackMarker([lat, lng]); // set fallback marker on click
+  }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <PanToStop selectedStop={selectedStop} />
 
-      {/* 🟡 Fallback Marker if coordinates are invalid */}
+      {/* 🟡 Fallback Marker */}
       {fallbackMarker && (
         <Marker position={fallbackMarker}>
           <Popup>
@@ -286,27 +315,57 @@ export default function MapComponent({ selectedStop }) {
         </Marker>
       )}
 
-      {/* 🚍 Bus Markers */}
+      {/* 🚍 Buses near user */}
       {buses
-        .filter(bus => bus.currentLocation)
-        .map(bus => (
-          <Marker
-            key={bus._id}
-            position={[bus.currentLocation.latitude, bus.currentLocation.longitude]}
-          >
-            <Popup>
-              <Bus className="inline-block mr-2 text-green-400" size={20} />
-              <strong>Bus #{bus.number}</strong>
-              <br />
-              {bus.driver?.name ? `Driver: ${bus.driver.name}` : 'No driver assigned'}
-            </Popup>
-          </Marker>
-        ))}
+        .filter((bus) => {
+          if (!bus.currentLocation) return false;
+          if (!userLocation) return true;
+          const dist = getDistanceFromLatLonInKm(
+            userLocation.latitude,
+            userLocation.longitude,
+            bus.currentLocation.latitude,
+            bus.currentLocation.longitude
+          );
+          return dist < 2;
+        })
+        .map((bus) => {
+          const { currentLocation } = bus;
+          if (!currentLocation) return null;
+          return (
+            <Marker
+              key={bus._id}
+              position={[
+                currentLocation.latitude,
+                currentLocation.longitude,
+              ]}
+            >
+              <Popup>
+                <Bus className="inline-block mr-2 text-green-400" size={20} />
+                <strong>Bus #{bus.number}</strong>
+                <br />
+                {bus.driver?.name
+                  ? `Driver: ${bus.driver.name}`
+                  : "No driver assigned"}
+              </Popup>
+            </Marker>
+          );
+        })}
 
-      {/* 📍 Stop Markers */}
+      {/* 👤 User Location Marker */}
+      {userLocation && (
+        <Marker
+          position={[userLocation.latitude, userLocation.longitude]}
+          icon={L.divIcon({
+            className: "user-location-icon",
+            html: `<div style="background:#3b82f6;color:white;padding:4px 8px;border-radius:6px;font-size:12px;">🧍 You</div>`,
+          })}
+        />
+      )}
+
+      {/* 📍 Public Stops */}
       {stops
-        .filter(stop => stop.location)
-        .map(stop => (
+        .filter((stop) => stop.location)
+        .map((stop) => (
           <Marker
             key={stop._id}
             position={[stop.location.latitude, stop.location.longitude]}
@@ -318,17 +377,23 @@ export default function MapComponent({ selectedStop }) {
           </Marker>
         ))}
 
-      {/* 🚨 Nearby buses from selected stop */}
-      {selectedStop && nearbyBuses.length > 0 && nearbyBuses.map((bus, idx) => (
-        <Marker
-          key={`nearby-${bus._id}-${idx}`}
-          position={[bus.currentLocation.latitude, bus.currentLocation.longitude]}
-          icon={L.divIcon({
-            className: 'nearby-bus-icon',
-            html: `<div style="background:#facc15;color:black;padding:4px 8px;border-radius:6px;font-size:12px;">🚍 Nearby ${bus.distance.toFixed(1)} km</div>`,
-          })}
-        />
-      ))}
+      {/* 🚨 Nearby buses to selected stop */}
+      {selectedStop &&
+        nearbyBuses.map((bus, idx) => (
+          <Marker
+            key={`nearby-${bus._id}-${idx}`}
+            position={[
+              bus.currentLocation.latitude,
+              bus.currentLocation.longitude,
+            ]}
+            icon={L.divIcon({
+              className: "nearby-bus-icon",
+              html: `<div style="background:#facc15;color:black;padding:4px 8px;border-radius:6px;font-size:12px;">🚍 Nearby ${bus.distance.toFixed(
+                1
+              )} km</div>`,
+            })}
+          />
+        ))}
     </MapContainer>
   );
 }
